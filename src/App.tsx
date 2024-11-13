@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { v4 as uuid } from "uuid";
 import styled from "@emotion/styled";
 import { AddInput } from "./components/AddInput";
@@ -41,7 +41,15 @@ const initialData: Todo[] = [
 ];
 
 function App() {
-  const [todos, setTodos] = useState<Todo[]>(initialData);
+  const [todos, setTodos] = useState<Todo[]>(()=>{
+    const savedTodos = window.localStorage.getItem('todos');
+    return savedTodos ? JSON.parse(savedTodos) : initialData;
+  });
+
+  // Save todos to localStorage whenever they change
+  useEffect(() => {
+    window.localStorage.setItem('todos', JSON.stringify(todos));
+  }, [todos]);
 
   const addTodo = useCallback((label: string) => {
     setTodos((prev) => [
@@ -54,9 +62,17 @@ function App() {
     ]);
   }, []);
 
-  const handleChange = useCallback((checked: boolean) => {
-    // handle the check/uncheck logic
-  }, []);
+  const handleChange = (id: string, checked: boolean) => {
+    setTodos((prevTodos) => {
+      // Update the checked state of the todo
+      const updatedTodos = prevTodos.map((todo) =>
+        todo.id === id ? { ...todo, checked } : todo
+      );
+      // Sort the todos: unchecked items first, checked items last
+      const sortedTodos = updatedTodos.sort((a, b) => Number(a.checked) - Number(b.checked));
+      return sortedTodos;
+    });
+  };
 
   return (
     <Wrapper>
@@ -64,7 +80,9 @@ function App() {
       <AddInput onAdd={addTodo} />
       <TodoList>
         {todos.map((todo) => (
-          <TodoItem {...todo} onChange={handleChange} />
+          <li>
+            <TodoItem key={todo.id} {...todo} onChange={(checked) => handleChange(todo.id, checked)} />
+          </li>
         ))}
       </TodoList>
     </Wrapper>
