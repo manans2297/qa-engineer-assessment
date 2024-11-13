@@ -6,29 +6,30 @@ import {Todo} from './interface'
 
 beforeEach(() => {
     const localStorageMock = (() => {
-      let pass: { [key: string]: string } = {};
+      let pass: {[key: string]: string} = {};
     
     return {
-        getItem(key: string) {
+        getItem(key: string){
           return pass[key] || null;
         },
-        setItem(key: string, value: string) {
+        setItem(key: string, value: string){
             pass[key] = value;
           },
           clear() {
             pass = {};
           },
-          removeItem(key: string) {
+          removeItem(key: string){
             delete pass[key];
           },
         }
     })();
+
     Object.defineProperty(window, 'localStorage', {
         value: localStorageMock,
       });
     });
+
     afterEach(() => {
-        //Clear cache between tests
         window.localStorage.clear();
     });
       
@@ -43,7 +44,7 @@ beforeEach(() => {
       //checkbox checked
       fireEvent.click(checklistItem);
       checklistItem = screen.getByLabelText(/Buy groceries/i);
-      //Expect it to be checked
+      //Expect checkbox to be checked
       expect(checklistItem).toBeChecked();
     });
     
@@ -58,7 +59,7 @@ beforeEach(() => {
         //click checkbox
         fireEvent.click(checklistItem);
 
-        //Expect it to be checked
+        //Expect checkbox not to be checked
         expect(checklistItem).not.toBeChecked();
     });
 
@@ -71,7 +72,6 @@ beforeEach(() => {
         { id: '3', label: 'Test 3', checked: true },
         ];
 
-        //Set localStorage
         window.localStorage.setItem('todos', JSON.stringify(todos));
 
         const { getByText } = render(<App />);
@@ -87,7 +87,7 @@ beforeEach(() => {
         render(<App />);
       
         const input_item = screen.getByPlaceholderText('Add a new todo item here');
-        fireEvent.change(input_item, {target: {value: 'New Todo Item' }});
+        fireEvent.change(input_item, {target:{value: 'New Todo Item'}});
         fireEvent.submit(input_item.closest('form')!);
       
         const newItem = await screen.findByText(/New Todo Item/i);
@@ -112,17 +112,17 @@ beforeEach(() => {
         window.localStorage.setItem('todos', JSON.stringify(todos));
         render(<App />);
       
-        //Get list of items before any interaction
+        //Get list of items before checking any of them
         let list_Items = screen.getAllByRole('listitem');
       
-        // Verify initial order of item list
+        //Verify initial list
         expect(list_Items[0]).toHaveTextContent('Test 1');
         expect(list_Items[1]).toHaveTextContent('Test 2');
         expect(list_Items[2]).toHaveTextContent('Test 3');
         
         //checking the new item ("New Item")
-        const item1Checkbox = screen.getByLabelText('Test 1');
-        fireEvent.click(item1Checkbox);
+        const item_Checkbox = screen.getByLabelText('Test 1');
+        fireEvent.click(item_Checkbox);
         list_Items = screen.getAllByRole('listitem');
 
         //Verify the count
